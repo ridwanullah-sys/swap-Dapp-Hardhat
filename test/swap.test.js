@@ -108,7 +108,7 @@ describe("swap test", function () {
             tokenOutput = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
             tokenInContract = await ethers.getContractAt(ABIs, tokenInput)
         })
-        describe("ExactInput", () => {
+        describe("E ExactInput", () => {
             let Balances1, swapType
             beforeEach(async () => {
                 swapType = 1
@@ -129,16 +129,19 @@ describe("swap test", function () {
                     value: 0,
                 })
                 const Balances2 = await Balances(tokenInput, tokenOutput)
-                const AmountSent =
-                    Balances1.receipientTokenInBalance - Balances2.receipientTokenInBalance
-                const AmountReceived =
-                    Balances2.receipientTokenOutBalance - Balances1.receipientTokenOutBalance
-                const AmountReceivedByOwner =
-                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
+                const AmountSent = Balances1.receipientTokenInBalance.sub(
+                    Balances2.receipientTokenInBalance
+                )
+                const AmountReceived = Balances2.receipientTokenOutBalance.sub(
+                    Balances1.receipientTokenOutBalance
+                )
+                const AmountReceivedByOwner = Balances2.OwnerTokenBalance.sub(
+                    Balances1.OwnerTokenBalance
+                )
                 const AssetWithSlippage = result.mul(BigNumber.from(100).sub(slippage)).div(100)
-                assert.equal(AmountSent, approvalAmount)
+                assert.equal(AmountSent.toString(), approvalAmount.toString())
                 assert.equal(AmountReceived.toString() >= AssetWithSlippage.toString(), true)
-                assert.equal(AmountReceivedByOwner, amountIn / 100)
+                assert.equal(AmountReceivedByOwner.toString(), amountIn.div(100).toString())
                 assert.equal(Balances2.contractTokenInBalance.toString(), 0)
                 assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
             })
@@ -151,35 +154,41 @@ describe("swap test", function () {
                     value: 0,
                 })
                 const Balances2 = await Balances(tokenInput, tokenOutput)
-                const AmountSent =
-                    Balances1.receipientTokenInBalance - Balances2.receipientTokenInBalance
-                const AmountReceived =
-                    Balances2.receipientTokenOutBalance - Balances1.receipientTokenOutBalance
-                const AmountReceivedByOwner =
-                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
+                const AmountSent = Balances1.receipientTokenInBalance.sub(
+                    Balances2.receipientTokenInBalance
+                )
+                const AmountReceived = Balances2.receipientTokenOutBalance.sub(
+                    Balances1.receipientTokenOutBalance
+                )
+                const AmountReceivedByOwner = Balances2.OwnerTokenBalance.sub(
+                    Balances1.OwnerTokenBalance
+                )
                 const AssetWithSlippage = result[1].mul(BigNumber.from(100).sub(slippage)).div(100)
-                assert.equal(AmountSent, approvalAmount)
+                assert.equal(AmountSent.toString(), approvalAmount.toString())
                 assert.equal(AmountReceived.toString() >= AssetWithSlippage.toString(), true)
-                assert.equal(AmountReceivedByOwner, amountIn / 100)
+                assert.equal(AmountReceivedByOwner.toString(), amountIn.div(100).toString())
                 assert.equal(Balances2.contractTokenInBalance.toString(), 0)
                 assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
             })
-            it("Curve", async () => {
+            it("E Curve", async () => {
                 const result = await curveContract.get_best_rate(tokenInput, tokenOutput, amountIn)
                 await swap.swapWithCurve(tokenInput, tokenOutput, amountIn, 0, slippage, {
                     value: 0,
                 })
                 const Balances2 = await Balances(tokenInput, tokenOutput)
-                const AmountSent =
-                    Balances1.receipientTokenInBalance - Balances2.receipientTokenInBalance
-                const AmountReceived =
-                    Balances2.receipientTokenOutBalance - Balances1.receipientTokenOutBalance
-                const AmountReceivedByOwner =
-                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
+                const AmountSent = Balances1.receipientTokenInBalance.sub(
+                    Balances2.receipientTokenInBalance
+                )
+                const AmountReceived = Balances2.receipientTokenOutBalance.sub(
+                    Balances1.receipientTokenOutBalance
+                )
+                const AmountReceivedByOwner = Balances2.OwnerTokenBalance.sub(
+                    Balances1.OwnerTokenBalance
+                )
                 const AssetWithSlippage = result[1].mul(BigNumber.from(100).sub(slippage)).div(100)
-                assert.equal(AmountSent, approvalAmount)
+                assert.equal(AmountSent.toString(), approvalAmount.toString())
                 assert.equal(AmountReceived.toString() >= AssetWithSlippage.toString(), true)
-                assert.equal(AmountReceivedByOwner, amountIn / 100)
+                assert.equal(AmountReceivedByOwner.toString(), amountIn.div(100).toString())
                 assert.equal(Balances2.contractTokenInBalance.toString(), 0)
                 assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
             })
@@ -212,16 +221,20 @@ describe("swap test", function () {
                 await swapWithBalancer.wait()
                 const Balances2 = await Balances(tokenInput, tokenOutput)
                 const Asset = batch_swap_function.find((assetdellta) => assetdellta < 0).mul(-1)
+
+                const AmountSent = Balances1.receipientTokenInBalance.sub(
+                    Balances2.receipientTokenInBalance
+                )
+                const AmountReceived = Balances2.receipientTokenOutBalance.sub(
+                    Balances1.receipientTokenOutBalance
+                )
+                const AmountReceivedByOwner = Balances2.OwnerTokenBalance.sub(
+                    Balances1.OwnerTokenBalance
+                )
                 const AssetWithSlippage = Asset.mul(BigNumber.from(100).sub(slippage)).div(100)
-                const AmountSent =
-                    Balances1.receipientTokenInBalance - Balances2.receipientTokenInBalance
-                const AmountReceived =
-                    Balances2.receipientTokenOutBalance - Balances1.receipientTokenOutBalance
-                const AmountReceivedByOwner =
-                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
-                assert.equal(AmountSent, approvalAmount)
+                assert.equal(AmountSent.toString(), approvalAmount.toString())
                 assert.equal(AmountReceived.toString() >= AssetWithSlippage.toString(), true)
-                assert.equal(AmountReceivedByOwner, amountIn / 100)
+                assert.equal(AmountReceivedByOwner.toString(), amountIn.div(100).toString())
                 assert.equal(Balances2.contractTokenInBalance.toString(), 0)
                 assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
             })
@@ -346,7 +359,7 @@ describe("swap test", function () {
                 approvalAmount = await swap.approvalAmountRequired(amountIn, swapType, slippage)
                 Balances1 = await Balances(WETH, tokenOutput)
             })
-            it("E Uniswap", async () => {
+            it("Uniswap", async () => {
                 const result = await uniContract.callStatic.quoteExactInputSingle(
                     WETH,
                     tokenOutput,
@@ -589,6 +602,286 @@ describe("swap test", function () {
                         AssetWithSlippage.add(
                             gasCost.add(batch_swap_function[0].div(100))
                         ).toString(),
+                    true
+                )
+                assert.equal(AmountReceivedByOwner, batch_swap_function[0].div(100))
+                assert.equal(Balances2.contractTokenInBalance.toString(), 0)
+                assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
+                assert.equal(Balances2.contractEthBalance.toString(), 0)
+            })
+        })
+    })
+    describe("Token-ETH", () => {
+        beforeEach(async () => {
+            tokenInput = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
+            tokenInContract = await ethers.getContractAt(ABIs, tokenInput)
+        })
+        describe("ExactInput", () => {
+            let Balances1, swapType
+            beforeEach(async () => {
+                swapType = 1
+                approvalAmount = await swap.approvalAmountRequired(amountIn, swapType, slippage)
+                const approve = await tokenInContract.approve(swap.address, approvalAmount)
+                await approve.wait()
+                Balances1 = await Balances(tokenInput, WETH)
+            })
+            it("Uniswap", async () => {
+                const result = await uniContract.callStatic.quoteExactInputSingle(
+                    tokenInput,
+                    WETH,
+                    3000,
+                    amountIn,
+                    0
+                )
+                const tx = await swap.Uniswap(
+                    tokenInput,
+                    ETH,
+                    3000,
+                    amountIn,
+                    0,
+                    swapType,
+                    slippage,
+                    {
+                        value: 0,
+                    }
+                )
+                const txreceipt = await tx.wait()
+                const { effectiveGasPrice, gasUsed } = txreceipt
+                const gasCost = gasUsed.mul(effectiveGasPrice)
+                const Balances2 = await Balances(tokenInput, WETH)
+                const AmountSent = Balances1.receipientTokenInBalance.sub(
+                    Balances2.receipientTokenInBalance
+                )
+                const AmountReceived = Balances2.receipientETHBalance.sub(
+                    Balances1.receipientETHBalance
+                )
+                const AmountReceivedByOwner =
+                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
+                const AssetWithSlippage = result.mul(BigNumber.from(100).sub(slippage)).div(100)
+                assert.equal(AmountSent.toString(), approvalAmount)
+                assert.equal(
+                    AmountReceived.add(gasCost).toString() >= AssetWithSlippage.toString(),
+                    true
+                )
+                assert.equal(AmountReceivedByOwner, amountIn / 100)
+                assert.equal(Balances2.contractTokenInBalance.toString(), 0)
+                assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
+                assert.equal(Balances2.contractEthBalance.toString(), 0)
+            })
+            it("sushiswap", async () => {
+                const result = await sushiContract.getAmountsOut(amountIn, [tokenInput, WETH])
+                const tx = await swap.swapWithSushi(
+                    tokenInput,
+                    ETH,
+                    amountIn,
+                    0,
+                    slippage,
+                    swapType,
+                    {
+                        value: 0,
+                    }
+                )
+                const txreceipt = await tx.wait()
+                const Balances2 = await Balances(tokenInput, WETH)
+                const { effectiveGasPrice, gasUsed } = txreceipt
+                const gasCost = gasUsed.mul(effectiveGasPrice)
+                const AmountSent = Balances1.receipientTokenInBalance.sub(
+                    Balances2.receipientTokenInBalance
+                )
+                const AmountReceived = Balances2.receipientETHBalance.sub(
+                    Balances1.receipientETHBalance
+                )
+                const AmountReceivedByOwner =
+                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
+                const AssetWithSlippage = result[1].mul(BigNumber.from(100).sub(slippage)).div(100)
+                assert.equal(AmountSent.toString(), approvalAmount)
+                assert.equal(
+                    AmountReceived.add(gasCost).toString() >= AssetWithSlippage.toString(),
+                    true
+                )
+                assert.equal(AmountReceivedByOwner, amountIn / 100)
+                assert.equal(Balances2.contractTokenInBalance.toString(), 0)
+                assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
+                assert.equal(Balances2.contractEthBalance.toString(), 0)
+            })
+            it("Balancer", async () => {
+                await getQuery(tokenInput, WETH)
+                await sor.fetchPools()
+                const swaps = await sor.getSwaps(tokenInput, WETH, SwapTypes.SwapExactIn, amountIn)
+                const batch_swap_function = await vaultContract.callStatic.queryBatchSwap(
+                    SwapTypes.SwapExactIn,
+                    swaps.swaps,
+                    swaps.tokenAddresses,
+                    fund_struct
+                )
+                const tx = await swap.swapWithBalancer(
+                    tokenInput,
+                    ETH,
+                    swaps.swaps,
+                    swaps.tokenAddresses,
+                    batch_swap_function,
+                    slippage,
+                    swapType,
+                    { value: 0 }
+                )
+
+                const txreceipt = await tx.wait()
+                const Balances2 = await Balances(tokenInput, WETH)
+                const Asset = batch_swap_function.find((assetdellta) => assetdellta < 0).mul(-1)
+                const { effectiveGasPrice, gasUsed } = txreceipt
+                const gasCost = gasUsed.mul(effectiveGasPrice)
+                const AssetWithSlippage = Asset.mul(BigNumber.from(100).sub(slippage)).div(100)
+                const AmountSent = Balances1.receipientTokenInBalance.sub(
+                    Balances2.receipientTokenInBalance
+                )
+                const AmountReceived = Balances2.receipientETHBalance.sub(
+                    Balances1.receipientETHBalance
+                )
+                const AmountReceivedByOwner =
+                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
+                console.log(AmountReceived.add(gasCost).toString())
+                console.log(Asset.toString())
+                assert.equal(AmountSent.toString(), approvalAmount)
+                assert.equal(
+                    AmountReceived.add(gasCost).toString() >= AssetWithSlippage.toString(),
+                    true
+                )
+                assert.equal(AmountReceivedByOwner, amountIn / 100)
+                assert.equal(Balances2.contractTokenInBalance.toString(), 0)
+                assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
+                assert.equal(Balances2.contractEthBalance.toString(), 0)
+            })
+        })
+        describe("ExactOutput", () => {
+            let Balances1, swapType
+            beforeEach(async () => {
+                swapType = 2
+                approvalAmount = await swap.approvalAmountRequired(amountIn, swapType, slippage)
+                const approve = await tokenInContract.approve(swap.address, approvalAmount)
+                await approve.wait()
+                Balances1 = await Balances(tokenInput, WETH)
+            })
+
+            it("Uniswap", async () => {
+                const result = await uniContract.callStatic.quoteExactOutputSingle(
+                    tokenInput,
+                    WETH,
+                    3000,
+                    2,
+                    0
+                )
+
+                const tx = await swap.Uniswap(
+                    tokenInput,
+                    ETH,
+                    3000,
+                    amountIn,
+                    2,
+                    swapType,
+                    slippage,
+                    {
+                        value: 0,
+                    }
+                )
+                const txreceipt = await tx.wait()
+                const Balances2 = await Balances(tokenInput, WETH)
+                const { effectiveGasPrice, gasUsed } = txreceipt
+                const gasCost = gasUsed.mul(effectiveGasPrice)
+                const AssetWithSlippage = result.mul(BigNumber.from(100).add(slippage)).div(100)
+                const AmountSent = Balances1.receipientTokenInBalance.sub(
+                    Balances2.receipientTokenInBalance
+                )
+                const AmountReceived = Balances2.receipientETHBalance.sub(
+                    Balances1.receipientETHBalance
+                )
+                const AmountReceivedByOwner =
+                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
+                assert.equal(AmountReceived.add(gasCost).toString(), 2)
+                assert.equal(
+                    AmountSent.toString() <= AssetWithSlippage.add(amountIn.div(100)).toString(),
+                    true
+                )
+                assert.equal(AmountReceivedByOwner, amountIn / 100)
+                assert.equal(Balances2.contractTokenInBalance.toString(), 0)
+                assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
+                assert.equal(Balances2.contractEthBalance.toString(), 0)
+            })
+            it("sushiswap", async () => {
+                const result = await sushiContract.getAmountsIn(2, [tokenInput, WETH])
+                const tx = await swap.swapWithSushi(
+                    tokenInput,
+                    ETH,
+                    amountIn,
+                    2,
+                    slippage,
+                    swapType,
+                    {
+                        value: 0,
+                    }
+                )
+                const txreceipt = await tx.wait()
+                const Balances2 = await Balances(tokenInput, WETH)
+                const { effectiveGasPrice, gasUsed } = txreceipt
+                const gasCost = gasUsed.mul(effectiveGasPrice)
+                const AssetWithSlippage = result[0].mul(BigNumber.from(100).add(slippage)).div(100)
+                const AmountSent = Balances1.receipientTokenInBalance.sub(
+                    Balances2.receipientTokenInBalance
+                )
+                const AmountReceived = Balances2.receipientETHBalance.sub(
+                    Balances1.receipientETHBalance
+                )
+                const AmountReceivedByOwner =
+                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
+                assert.equal(AmountReceived.add(gasCost).toString(), 2)
+                assert.equal(
+                    AmountSent.toString() <= AssetWithSlippage.add(amountIn.div(100)).toString(),
+                    true
+                )
+                assert.equal(AmountReceivedByOwner, amountIn / 100)
+                assert.equal(Balances2.contractTokenInBalance.toString(), 0)
+                assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
+                assert.equal(Balances2.contractEthBalance.toString(), 0)
+            })
+            it("E Balancer", async () => {
+                await getQuery(tokenInput, WETH)
+                await sor.fetchPools()
+                const swaps = await sor.getSwaps(tokenInput, WETH, SwapTypes.SwapExactOut, 2)
+                const batch_swap_function = await vaultContract.callStatic.queryBatchSwap(
+                    SwapTypes.SwapExactOut,
+                    swaps.swaps,
+                    swaps.tokenAddresses,
+                    fund_struct
+                )
+                const tx = await swap.swapWithBalancer(
+                    tokenInput,
+                    ETH,
+                    swaps.swaps,
+                    swaps.tokenAddresses,
+                    batch_swap_function,
+                    slippage,
+                    swapType,
+                    { value: 0 }
+                )
+
+                const txreceipt = await tx.wait()
+                const Balances2 = await Balances(tokenInput, WETH)
+                const AssetWithSlippage = batch_swap_function[0]
+                    .mul(BigNumber.from(100).add(slippage))
+                    .div(100)
+                const { effectiveGasPrice, gasUsed } = txreceipt
+                const gasCost = gasUsed.mul(effectiveGasPrice)
+                const AmountSent = Balances1.receipientTokenInBalance.sub(
+                    Balances2.receipientTokenInBalance
+                )
+                const AmountReceived = Balances2.receipientETHBalance.sub(
+                    Balances1.receipientETHBalance
+                )
+                const AmountReceivedByOwner =
+                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
+                assert.equal(AmountReceived.add(gasCost).toString(), 2)
+                assert.equal(
+                    AmountSent.toString() <=
+                        AssetWithSlippage.add(batch_swap_function[0].div(100)).toString(),
                     true
                 )
                 assert.equal(AmountReceivedByOwner, batch_swap_function[0].div(100))
