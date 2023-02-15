@@ -1,0 +1,29 @@
+{
+  "name": "swap",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "npm:hardhat-deploy-ethers",
+    "@nomiclabs/hardhat-etherscan": "^3.1.5",
+    "@nomiclabs/hardhat-waffle": "^3.0.0",
+    "chai": "^4.3.7",
+    "dotenv": "^16.0.3",
+    "ethereum-waffle": "^4.0.8",
+    "ethers": "^5.7.2",
+    "hardhat": "^2.12.6",
+    "hardhat-contract-sizer": "^2.7.0",
+    "hardhat-deploy": "^0.11.22",
+    "hardhat-gas-reporter": "^1.0.9",
+    "prettier": "^2.8.3",
+    "prettier-plugin-solidity": "^1.1.1",
+    "solhint": "^3.3.8",
+    "solidity-coverage": "^0.8.2"
+  },
+  "dependencies": {
+    "@balancer-labs/sor": "^4.1.1-beta.0",
+    "@uniswap/v3-core": "^1.0.1",
+    "@uniswap/v3-periphery": "^1.4.3",
+    "node-fetch": "^2.6.1"
+  }
+}
