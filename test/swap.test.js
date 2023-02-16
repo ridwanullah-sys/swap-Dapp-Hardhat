@@ -19,7 +19,8 @@ describe("swap test", function () {
         sushiContract,
         uniContract,
         curveContract
-    const amountIn = ethers.utils.parseEther("0.00001")
+
+    const amountIn = ethers.utils.parseEther("0.1")
     const slippage = 5
     const ABIfile = "./constants/ERC20ABI.json"
     const ABIs = JSON.parse(fs.readFileSync(ABIfile, "utf8"))
@@ -108,7 +109,7 @@ describe("swap test", function () {
             tokenOutput = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
             tokenInContract = await ethers.getContractAt(ABIs, tokenInput)
         })
-        describe("E ExactInput", () => {
+        describe("ExactInput", () => {
             let Balances1, swapType
             beforeEach(async () => {
                 swapType = 1
@@ -170,11 +171,19 @@ describe("swap test", function () {
                 assert.equal(Balances2.contractTokenInBalance.toString(), 0)
                 assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
             })
-            it("E Curve", async () => {
+            it("Curve", async () => {
                 const result = await curveContract.get_best_rate(tokenInput, tokenOutput, amountIn)
-                await swap.swapWithCurve(tokenInput, tokenOutput, amountIn, 0, slippage, {
-                    value: 0,
-                })
+                await swap.swapWithCurve(
+                    tokenInput,
+                    tokenOutput,
+                    result[0],
+                    amountIn,
+                    0,
+                    slippage,
+                    {
+                        value: 0,
+                    }
+                )
                 const Balances2 = await Balances(tokenInput, tokenOutput)
                 const AmountSent = Balances1.receipientTokenInBalance.sub(
                     Balances2.receipientTokenInBalance
@@ -265,10 +274,12 @@ describe("swap test", function () {
                 const AmountSent = Balances1.receipientTokenInBalance.sub(
                     Balances2.receipientTokenInBalance
                 )
-                const AmountReceived =
-                    Balances2.receipientTokenOutBalance - Balances1.receipientTokenOutBalance
-                const AmountReceivedByOwner =
-                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
+                const AmountReceived = Balances2.receipientTokenOutBalance.sub(
+                    Balances1.receipientTokenOutBalance
+                )
+                const AmountReceivedByOwner = Balances2.OwnerTokenBalance.sub(
+                    Balances1.OwnerTokenBalance
+                )
                 assert.equal(AmountReceived, 2)
                 assert.equal(
                     AmountSent.toString() <= AssetWithSlippage.add(amountIn.div(100)).toString(),
@@ -288,10 +299,12 @@ describe("swap test", function () {
                 const AmountSent = Balances1.receipientTokenInBalance.sub(
                     Balances2.receipientTokenInBalance
                 )
-                const AmountReceived =
-                    Balances2.receipientTokenOutBalance - Balances1.receipientTokenOutBalance
-                const AmountReceivedByOwner =
-                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
+                const AmountReceived = Balances2.receipientTokenOutBalance.sub(
+                    Balances1.receipientTokenOutBalance
+                )
+                const AmountReceivedByOwner = Balances2.OwnerTokenBalance.sub(
+                    Balances1.OwnerTokenBalance
+                )
                 assert.equal(AmountReceived, 2)
                 assert.equal(
                     AmountSent.toString() <= AssetWithSlippage.add(amountIn.div(100)).toString(),
@@ -330,17 +343,22 @@ describe("swap test", function () {
                 const AmountSent = Balances1.receipientTokenInBalance.sub(
                     Balances2.receipientTokenInBalance
                 )
-                const AmountReceived =
-                    Balances2.receipientTokenOutBalance - Balances1.receipientTokenOutBalance
-                const AmountReceivedByOwner =
-                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
+                const AmountReceived = Balances2.receipientTokenOutBalance.sub(
+                    Balances1.receipientTokenOutBalance
+                )
+                const AmountReceivedByOwner = Balances2.OwnerTokenBalance.sub(
+                    Balances1.OwnerTokenBalance
+                )
                 assert.equal(AmountReceived, 2)
                 assert.equal(
                     AmountSent.toString() <=
                         AssetWithSlippage.add(batch_swap_function[0].div(100)).toString(),
                     true
                 )
-                assert.equal(AmountReceivedByOwner, batch_swap_function[0].div(100))
+                assert.equal(
+                    AmountReceivedByOwner.toString(),
+                    batch_swap_function[0].div(100).toString()
+                )
                 assert.equal(Balances2.contractTokenInBalance.toString(), 0)
                 assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
             })
@@ -386,14 +404,16 @@ describe("swap test", function () {
                 const AmountSent = Balances1.receipientETHBalance.sub(
                     Balances2.receipientETHBalance
                 )
-                const AmountReceived =
-                    Balances2.receipientTokenOutBalance - Balances1.receipientTokenOutBalance
-                const AmountReceivedByOwner =
-                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
+                const AmountReceived = Balances2.receipientTokenOutBalance.sub(
+                    Balances1.receipientTokenOutBalance
+                )
+                const AmountReceivedByOwner = Balances2.OwnerTokenBalance.sub(
+                    Balances1.OwnerTokenBalance
+                )
                 const AssetWithSlippage = result.mul(BigNumber.from(100).sub(slippage)).div(100)
                 assert.equal(AmountSent.toString(), approvalAmount.add(gasCost).toString())
                 assert.equal(AmountReceived.toString() >= AssetWithSlippage.toString(), true)
-                assert.equal(AmountReceivedByOwner, amountIn / 100)
+                assert.equal(AmountReceivedByOwner.toString(), amountIn.div(100).toString())
                 assert.equal(Balances2.contractTokenInBalance.toString(), 0)
                 assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
                 assert.equal(Balances2.contractEthBalance.toString(), 0)
@@ -418,13 +438,51 @@ describe("swap test", function () {
                 const AmountSent = Balances1.receipientETHBalance.sub(
                     Balances2.receipientETHBalance
                 )
-                const AmountReceived =
-                    Balances2.receipientTokenOutBalance - Balances1.receipientTokenOutBalance
-                const AmountReceivedByOwner = Balances2.OwnerETHBalance - Balances1.OwnerETHBalance
+                const AmountReceived = Balances2.receipientTokenOutBalance.sub(
+                    Balances1.receipientTokenOutBalance
+                )
+                const AmountReceivedByOwner = Balances2.OwnerETHBalance.sub(
+                    Balances1.OwnerETHBalance
+                )
                 const AssetWithSlippage = result[1].mul(BigNumber.from(100).sub(slippage)).div(100)
                 assert.equal(AmountSent.toString(), approvalAmount.add(gasCost).toString())
                 assert.equal(AmountReceived.toString() >= AssetWithSlippage.toString(), true)
-                assert.equal(AmountReceivedByOwner, amountIn / 100)
+                assert.equal(AmountReceivedByOwner.toString(), amountIn.div(100).toString())
+                assert.equal(Balances2.contractTokenInBalance.toString(), 0)
+                assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
+                assert.equal(Balances2.contractEthBalance.toString(), 0)
+            })
+            it("Curve", async () => {
+                const result = await curveContract.get_best_rate(WETH, tokenOutput, amountIn)
+                const tx = await swap.swapWithCurve(
+                    ETH,
+                    tokenOutput,
+                    result[0],
+                    amountIn,
+                    0,
+                    slippage,
+                    {
+                        value: approvalAmount,
+                    }
+                )
+                const txreceipt = await tx.wait()
+                const Balances2 = await Balances(WETH, tokenOutput)
+                const { effectiveGasPrice, gasUsed } = txreceipt
+                const gasCost = gasUsed.mul(effectiveGasPrice)
+                const AmountSent = Balances1.receipientETHBalance.sub(
+                    Balances2.receipientETHBalance
+                )
+                const AmountReceived = Balances2.receipientTokenOutBalance.sub(
+                    Balances1.receipientTokenOutBalance
+                )
+
+                const AmountReceivedByOwner = Balances2.OwnerTokenBalance.sub(
+                    Balances1.OwnerTokenBalance
+                )
+                const AssetWithSlippage = result[1].mul(BigNumber.from(100).sub(slippage)).div(100)
+                assert.equal(AmountSent.toString(), approvalAmount.add(gasCost).toString())
+                assert.equal(AmountReceived.toString() >= AssetWithSlippage.toString(), true)
+                assert.equal(AmountReceivedByOwner.toString(), amountIn.div(100).toString())
                 assert.equal(Balances2.contractTokenInBalance.toString(), 0)
                 assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
                 assert.equal(Balances2.contractEthBalance.toString(), 0)
@@ -458,15 +516,17 @@ describe("swap test", function () {
                 const AmountSent = Balances1.receipientETHBalance.sub(
                     Balances2.receipientETHBalance
                 )
-                const AmountReceived =
-                    Balances2.receipientTokenOutBalance - Balances1.receipientTokenOutBalance
-                const AmountReceivedByOwner =
-                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
+                const AmountReceived = Balances2.receipientTokenOutBalance.sub(
+                    Balances1.receipientTokenOutBalance
+                )
+                const AmountReceivedByOwner = Balances2.OwnerTokenBalance.sub(
+                    Balances1.OwnerTokenBalance
+                )
                 const AssetWithSlippage = Asset.mul(BigNumber.from(100).sub(slippage)).div(100)
 
                 assert.equal(AmountSent.toString(), approvalAmount.add(gasCost).toString())
                 assert.equal(AmountReceived.toString() >= AssetWithSlippage.toString(), true)
-                assert.equal(AmountReceivedByOwner, amountIn / 100)
+                assert.equal(AmountReceivedByOwner.toString(), amountIn.div(100).toString())
                 assert.equal(Balances2.contractTokenInBalance.toString(), 0)
                 assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
                 assert.equal(Balances2.contractEthBalance.toString(), 0)
@@ -496,7 +556,7 @@ describe("swap test", function () {
                     swapType,
                     slippage,
                     {
-                        value: approvalAmount.add(200),
+                        value: approvalAmount.add(100),
                     }
                 )
                 const txreceipt = await tx.wait()
@@ -511,15 +571,16 @@ describe("swap test", function () {
                     Balances1.receipientTokenOutBalance
                 )
 
-                const AmountReceivedByOwner =
-                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
+                const AmountReceivedByOwner = Balances2.OwnerTokenBalance.sub(
+                    Balances1.OwnerTokenBalance
+                )
                 assert.equal(AmountReceived.toString(), (200).toString())
                 assert.equal(
                     AmountSent.toString() <=
                         AssetWithSlippage.add(gasCost.add(amountIn / 100)).toString(),
                     true
                 )
-                assert.equal(AmountReceivedByOwner, amountIn / 100)
+                assert.equal(AmountReceivedByOwner.toString(), amountIn.div(100).toString())
                 assert.equal(Balances2.contractTokenInBalance.toString(), 0)
                 assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
                 assert.equal(Balances2.contractEthBalance.toString(), 0)
@@ -534,7 +595,7 @@ describe("swap test", function () {
                     slippage,
                     swapType,
                     {
-                        value: approvalAmount.add(100),
+                        value: approvalAmount.add(700),
                     }
                 )
                 const txreceipt = await tx.wait()
@@ -548,14 +609,16 @@ describe("swap test", function () {
                 const AmountReceived = Balances2.receipientTokenOutBalance.sub(
                     Balances1.receipientTokenOutBalance
                 )
-                const AmountReceivedByOwner = Balances2.OwnerETHBalance - Balances1.OwnerETHBalance
+                const AmountReceivedByOwner = Balances2.OwnerETHBalance.sub(
+                    Balances1.OwnerETHBalance
+                )
                 assert.equal(AmountReceived.toString(), (200).toString())
                 assert.equal(
                     AmountSent.toString() <=
                         AssetWithSlippage.add(gasCost.add(amountIn / 100)).toString(),
                     true
                 )
-                assert.equal(AmountReceivedByOwner, amountIn / 100)
+                assert.equal(AmountReceivedByOwner.toString(), amountIn.div(100).toString())
                 assert.equal(Balances2.contractTokenInBalance.toString(), 0)
                 assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
                 assert.equal(Balances2.contractEthBalance.toString(), 0)
@@ -594,8 +657,9 @@ describe("swap test", function () {
                 const AmountReceived = Balances2.receipientTokenOutBalance.sub(
                     Balances1.receipientTokenOutBalance
                 )
-                const AmountReceivedByOwner =
-                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
+                const AmountReceivedByOwner = Balances2.OwnerTokenBalance.sub(
+                    Balances1.OwnerTokenBalance
+                )
                 assert.equal(AmountReceived.toString(), (200).toString())
                 assert.equal(
                     AmountSent.toString() <=
@@ -604,7 +668,7 @@ describe("swap test", function () {
                         ).toString(),
                     true
                 )
-                assert.equal(AmountReceivedByOwner, batch_swap_function[0].div(100))
+                assert.equal(AmountReceivedByOwner.toString(), batch_swap_function[0].div(100))
                 assert.equal(Balances2.contractTokenInBalance.toString(), 0)
                 assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
                 assert.equal(Balances2.contractEthBalance.toString(), 0)
@@ -655,15 +719,16 @@ describe("swap test", function () {
                 const AmountReceived = Balances2.receipientETHBalance.sub(
                     Balances1.receipientETHBalance
                 )
-                const AmountReceivedByOwner =
-                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
+                const AmountReceivedByOwner = Balances2.OwnerTokenBalance.sub(
+                    Balances1.OwnerTokenBalance
+                )
                 const AssetWithSlippage = result.mul(BigNumber.from(100).sub(slippage)).div(100)
                 assert.equal(AmountSent.toString(), approvalAmount)
                 assert.equal(
                     AmountReceived.add(gasCost).toString() >= AssetWithSlippage.toString(),
                     true
                 )
-                assert.equal(AmountReceivedByOwner, amountIn / 100)
+                assert.equal(AmountReceivedByOwner.toString(), amountIn.div(100).toString())
                 assert.equal(Balances2.contractTokenInBalance.toString(), 0)
                 assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
                 assert.equal(Balances2.contractEthBalance.toString(), 0)
@@ -691,15 +756,58 @@ describe("swap test", function () {
                 const AmountReceived = Balances2.receipientETHBalance.sub(
                     Balances1.receipientETHBalance
                 )
-                const AmountReceivedByOwner =
-                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
+                const AmountReceivedByOwner = Balances2.OwnerTokenBalance.sub(
+                    Balances1.OwnerTokenBalance
+                )
                 const AssetWithSlippage = result[1].mul(BigNumber.from(100).sub(slippage)).div(100)
                 assert.equal(AmountSent.toString(), approvalAmount)
                 assert.equal(
                     AmountReceived.add(gasCost).toString() >= AssetWithSlippage.toString(),
                     true
                 )
-                assert.equal(AmountReceivedByOwner, amountIn / 100)
+                assert.equal(AmountReceivedByOwner.toString(), amountIn.div(100).toString())
+                assert.equal(Balances2.contractTokenInBalance.toString(), 0)
+                assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
+                assert.equal(Balances2.contractEthBalance.toString(), 0)
+            })
+            it("E Curve", async () => {
+                const USDT = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+                tokenInContract = await ethers.getContractAt(ABIs, USDT)
+                Balances1 = await Balances(USDT, WETH)
+                const amount = ethers.utils.parseUnits("1", 6)
+                const result = await curveContract.get_best_rate(USDT, WETH, amount)
+                approvalAmount = await swap.approvalAmountRequired(amount, swapType, slippage)
+                const approve1 = await tokenInContract.approve(swap.address, 0)
+                await approve1.wait()
+                const approve = await tokenInContract.approve(swap.address, approvalAmount)
+                await approve.wait()
+                const tx = await swap.swapWithCurve(USDT, ETH, result[0], amount, 0, slippage, {
+                    value: 0,
+                })
+                const txreceipt = await tx.wait()
+                const Balances2 = await Balances(USDT, WETH)
+                const { effectiveGasPrice, gasUsed } = txreceipt
+                const gasCost = gasUsed.mul(effectiveGasPrice)
+                const AmountSent = Balances1.receipientTokenInBalance.sub(
+                    Balances2.receipientTokenInBalance
+                )
+                const AmountReceived = Balances2.receipientETHBalance.sub(
+                    Balances1.receipientETHBalance
+                )
+                const AmountReceivedByOwner = Balances2.OwnerTokenBalance.sub(
+                    Balances1.OwnerTokenBalance
+                )
+
+                const AssetWithSlippage = result[1].mul(BigNumber.from(100).sub(slippage)).div(100)
+                assert.equal(AmountSent.toString(), approvalAmount)
+                console.log(AmountReceived.add(gasCost).toString())
+                console.log(result[1].toString())
+
+                assert.equal(
+                    AmountReceived.add(gasCost).toString() >= AssetWithSlippage.toString(),
+                    true
+                )
+                assert.equal(AmountReceivedByOwner.toString(), amount.div(100).toString())
                 assert.equal(Balances2.contractTokenInBalance.toString(), 0)
                 assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
                 assert.equal(Balances2.contractEthBalance.toString(), 0)
@@ -737,16 +845,15 @@ describe("swap test", function () {
                 const AmountReceived = Balances2.receipientETHBalance.sub(
                     Balances1.receipientETHBalance
                 )
-                const AmountReceivedByOwner =
-                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
-                console.log(AmountReceived.add(gasCost).toString())
-                console.log(Asset.toString())
+                const AmountReceivedByOwner = Balances2.OwnerTokenBalance.sub(
+                    Balances1.OwnerTokenBalance
+                )
                 assert.equal(AmountSent.toString(), approvalAmount)
                 assert.equal(
                     AmountReceived.add(gasCost).toString() >= AssetWithSlippage.toString(),
                     true
                 )
-                assert.equal(AmountReceivedByOwner, amountIn / 100)
+                assert.equal(AmountReceivedByOwner.toString(), amountIn.div(100).toString())
                 assert.equal(Balances2.contractTokenInBalance.toString(), 0)
                 assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
                 assert.equal(Balances2.contractEthBalance.toString(), 0)
@@ -794,14 +901,15 @@ describe("swap test", function () {
                 const AmountReceived = Balances2.receipientETHBalance.sub(
                     Balances1.receipientETHBalance
                 )
-                const AmountReceivedByOwner =
-                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
+                const AmountReceivedByOwner = Balances2.OwnerTokenBalance.sub(
+                    Balances1.OwnerTokenBalance
+                )
                 assert.equal(AmountReceived.add(gasCost).toString(), 2)
                 assert.equal(
                     AmountSent.toString() <= AssetWithSlippage.add(amountIn.div(100)).toString(),
                     true
                 )
-                assert.equal(AmountReceivedByOwner, amountIn / 100)
+                assert.equal(AmountReceivedByOwner.toString(), amountIn.div(100).toString())
                 assert.equal(Balances2.contractTokenInBalance.toString(), 0)
                 assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
                 assert.equal(Balances2.contractEthBalance.toString(), 0)
@@ -830,19 +938,20 @@ describe("swap test", function () {
                 const AmountReceived = Balances2.receipientETHBalance.sub(
                     Balances1.receipientETHBalance
                 )
-                const AmountReceivedByOwner =
-                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
+                const AmountReceivedByOwner = Balances2.OwnerTokenBalance.sub(
+                    Balances1.OwnerTokenBalance
+                )
                 assert.equal(AmountReceived.add(gasCost).toString(), 2)
                 assert.equal(
                     AmountSent.toString() <= AssetWithSlippage.add(amountIn.div(100)).toString(),
                     true
                 )
-                assert.equal(AmountReceivedByOwner, amountIn / 100)
+                assert.equal(AmountReceivedByOwner.toString(), amountIn.div(100).toString())
                 assert.equal(Balances2.contractTokenInBalance.toString(), 0)
                 assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
                 assert.equal(Balances2.contractEthBalance.toString(), 0)
             })
-            it("E Balancer", async () => {
+            it("Balancer", async () => {
                 await getQuery(tokenInput, WETH)
                 await sor.fetchPools()
                 const swaps = await sor.getSwaps(tokenInput, WETH, SwapTypes.SwapExactOut, 2)
@@ -876,15 +985,19 @@ describe("swap test", function () {
                 const AmountReceived = Balances2.receipientETHBalance.sub(
                     Balances1.receipientETHBalance
                 )
-                const AmountReceivedByOwner =
-                    Balances2.OwnerTokenBalance - Balances1.OwnerTokenBalance
+                const AmountReceivedByOwner = Balances2.OwnerTokenBalance.sub(
+                    Balances1.OwnerTokenBalance
+                )
                 assert.equal(AmountReceived.add(gasCost).toString(), 2)
                 assert.equal(
                     AmountSent.toString() <=
                         AssetWithSlippage.add(batch_swap_function[0].div(100)).toString(),
                     true
                 )
-                assert.equal(AmountReceivedByOwner, batch_swap_function[0].div(100))
+                assert.equal(
+                    AmountReceivedByOwner.toString(),
+                    batch_swap_function[0].div(100).toString()
+                )
                 assert.equal(Balances2.contractTokenInBalance.toString(), 0)
                 assert.equal(Balances2.contractTokenOutBalance.toString(), 0)
                 assert.equal(Balances2.contractEthBalance.toString(), 0)

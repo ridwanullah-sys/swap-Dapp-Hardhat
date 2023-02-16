@@ -136,6 +136,7 @@ contract Swap {
     function swapWithCurve(
         address _tokenInput,
         address _tokenOutput,
+        address _pool,
         uint256 _amountIn,
         uint256 _amountOut,
         uint256 _slippage
@@ -166,9 +167,10 @@ contract Swap {
         address exchangeAddress = abi.decode(data, (address));
         TransferHelper.safeApprove(_tokenInput, exchangeAddress, _amountIn);
         uint256 amountOutMinimum = (_amountOut * (100 - _slippage)) / (100);
-        (bool Exsuccess, ) = exchangeAddress.call(
+        (bool Exsuccess, bytes memory data2) = exchangeAddress.call(
             abi.encodeWithSignature(
-                "exchange_with_best_rate(address,address,uint256,uint256,address)",
+                "exchange(address,address,address,uint256,uint256,address)",
+                _pool,
                 _tokenInput,
                 _tokenOutput,
                 _amountIn,
@@ -176,9 +178,10 @@ contract Swap {
                 receipient
             )
         );
+        uint256 amountReceived = abi.decode(data2, (uint256));
         require(Exsuccess, "Curve Swap Failed");
         if (unwrap) {
-            this.unWrap(_amountOut, msg.sender);
+            this.unWrap(amountReceived, msg.sender);
         }
     }
 
