@@ -44,6 +44,8 @@ contract Swap {
 
         if (_tokenInput != ETH) {
             require(msg.value == 0, "Require value");
+        } else {
+            require(msg.value >= (amountIn + amountIn / 100), "Eth sent is too low");
         }
         if (swapType == 1) {
             if (_tokenInput == ETH) {
@@ -143,6 +145,8 @@ contract Swap {
     ) public payable {
         if (_tokenInput != ETH) {
             require(msg.value == 0, "Require value to be zero");
+        } else {
+            require(msg.value >= (_amountIn + _amountIn / 100), "Eth sent is too low");
         }
         address receipient = _tokenOutput == ETH ? address(this) : msg.sender;
         bool unwrap = _tokenOutput == ETH ? true : false;
@@ -183,6 +187,10 @@ contract Swap {
         if (unwrap) {
             this.unWrap(amountReceived, msg.sender);
         }
+
+        if (msg.value > (_amountIn + (_amountIn / 100))) {
+            this.unWrap(msg.value - (_amountIn + (_amountIn / 100)), msg.sender);
+        }
     }
 
     function swapWithSushi(
@@ -198,6 +206,8 @@ contract Swap {
         path[1] = _tokenOutput == ETH ? Weth : _tokenOutput;
         if (_tokenInput != ETH) {
             require(msg.value == 0, "Require value to be zero");
+        } else {
+            require(msg.value >= (_amountIn + _amountIn / 100), "Eth sent is too low");
         }
         if (_swapType == 1) {
             if (_tokenInput == ETH) {
@@ -345,6 +355,8 @@ contract Swap {
     ) public payable {
         if (_tokenInput != ETH) {
             require(msg.value == 0, "Require value to be zero");
+        } else {
+            require(msg.value >= uint256(limits[0] + limits[0] / 100), "Eth sent is too low");
         }
         address receipient = _tokenOutput == ETH ? address(this) : msg.sender;
         IVault.FundManagement memory funds = IVault.FundManagement({
